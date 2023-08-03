@@ -2,14 +2,14 @@
 
 This is a minimum tarball library.
 
-### The functionalities it offers are:
+### The functionalities it offers:
 
 1. read a directory into a tarball data structure
 2. extract a tarball data structure to a directory
 3. marshal a tarball data structure to one tarball file
 4. unmarshal a tarball file into a tarball data structure
 
-### Supported file types are:
+### Supported file types:
 
 1. directory
 2. regular file
@@ -23,32 +23,34 @@ Crossplatform.
 
 A C++ 17 or newer standard compatible compiler. This library depends on the Filesystem library comes with C++ 17.
 
+The Filesystem library provides facilities for performing operations on file systems and their components, such as paths, regular files, and directories.
+
 ### How to add the library to your project:
 
-1. Clone the library as a submodule  of copy the directory as an external library in your project. Add this library with the cmake statement:
+Any of the three solutions works. Solution 1 or 2 is recommended.
 
-```
-add_subdirectory(the_path_of_the_library)
-target_link_libraries(your_target PUBLIC minitar)
-```
+1. Clone the library as a submodule  of copy the library as an external library in your project. Add this library with the cmake statement:
+
+    ```
+    add_subdirectory(the_path_of_the_library)
+    target_link_libraries(your_target PUBLIC minitar)
+    ```
 
 2. The cmake configuration of this library exports itself in its build directory. So you don't even need to pollute your source code tree of your project.
 
-Add the statement to your CMakeLists.txt:
+    Add the statement to your CMakeLists.txt:
 
-`find_package(minitar REQUIRED) `
+    `find_package(minitar REQUIRED) `
 
-When building your project, prefix the environment variable to tell cmake where to find the library:
-`minitar_DIR=the_path_of_the_build_direcotry_of_minitar make`
+    When building your project, prefix the environment variable to tell cmake where to find the library:
+
+    `minitar_DIR=the_path_of_the_build_direcotry_of_minitar make`
 
 3. Install the library system-widely:
 
-This library is default to be built as a shared library. If you want a static library instead, tell cmake with the environment variable:
+    This library is default to be built as a shared library. If you want a static library instead, tell cmake with the environment variable:
 
-`BUILD_SHARED_LIBS=OFF make`
-
-
-The Filesystem library provides facilities for performing operations on file systems and their components, such as paths, regular files, and directories.
+    `BUILD_SHARED_LIBS=OFF make`
 
 ## Why does this library exist?
 
