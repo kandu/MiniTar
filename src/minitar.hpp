@@ -67,30 +67,20 @@ namespace minitar {
             tar children;
         };
 
-        using touch_header= uint64_t;
-
-        using touches= std::list<touch_header>;
-        using touche_contents= std::list<std::string>;
-
-        std::optional<tar> read_fs_tree(std::filesystem::path root);
-        std::optional<mkdir> read_dir_tree(std::filesystem::path root);
-
-        void write_tar_tree(tar & tar, std::filesystem::path root);
-        void write_dir_tree(mkdir & dir, std::filesystem::path root);
-
-        void print_dir(mkdir & dir, uint16_t level= 0);
-        void print_tar(tar & tar, uint16_t level= 0);
-
         size_t marshal_size(tar const & tar);
 
-        std::optional<std::pair<tar, void*>> read_tar(void* data);
-        void write_tar(tar const & tar, void* data);
+        void marshal(tar const & tar, void* data);
+        std::optional<std::pair<tar, void*>> unmarshal(void* data);
 
         template<typename stream>
-        std::optional<tar> stream_read_tar(StreamReader<stream> & reader);
-
+        void stream_marshal(std::optional<tar> const & tar, StreamWriter<stream> & writer);
         template<typename stream>
-        void stream_write_tar(std::optional<tar> const & tar, StreamWriter<stream> & writer);
+        std::optional<tar> stream_unmarshal(StreamReader<stream> & reader);
+
+        std::optional<tar> read_fs_tree(std::filesystem::path root);
+        void write_tar_tree(tar & tar, std::filesystem::path root);
+
+        void print_tar(tar & tar, uint16_t level= 0);
     }
 
     using tar= std::variant<v1::tar>;

@@ -83,7 +83,11 @@ namespace minitar {
 
 namespace minitar::v1 {
 
-    pair<tar, void*> read_header_aux(touches& touches, void* data) {
+    using touch_header= uint64_t;
+    using touche_headers= std::list<touch_header>;
+    using touche_contents= std::list<std::string>;
+
+    pair<tar, void*> read_header_aux(touche_headers& touches, void* data) {
         auto ptr= data;
 
         tar tar_acc;
@@ -130,8 +134,8 @@ namespace minitar::v1 {
         } while(true);
     }
 
-    optional<tuple<tar, void*, touches>> read_header(void* data) {
-        optional<tuple<tar, void*, touches>> const empty;
+    optional<tuple<tar, void*, touche_headers>> read_header(void* data) {
+        optional<tuple<tar, void*, touche_headers>> const empty;
         auto ptr= data;
 
         string header_magic;
@@ -146,13 +150,13 @@ namespace minitar::v1 {
             return empty;
         }
 
-        touches touches;
+        touche_headers touches;
         tar header;
         tie(header, ptr)= read_header_aux(touches, ptr);
         return tuple(header, ptr, touches);
     }
 
-    void* read_data_aux(tar& tar_acc, touches& touches, void* data) {
+    void* read_data_aux(tar& tar_acc, touche_headers& touches, void* data) {
         auto elementReader = Overload {
             [&tar_acc, &touches, &data](mkdir & mkdir) {
                 data= read_data_aux(mkdir.children, touches, data);
@@ -173,15 +177,15 @@ namespace minitar::v1 {
         return data;
     }
 
-    pair<tar, void*> read_data(tar header, touches header_touches, void* data) {
+    pair<tar, void*> read_data(tar header, touche_headers header_touches, void* data) {
         tar tar= header;
-        touches touches= header_touches;
+        touche_headers touches= header_touches;
 
         auto ptr= read_data_aux(tar, touches, data);
         return pair(tar, (void*)ptr);
     }
 
-    optional<pair<tar, void*>> read_tar(void* data) {
+    optional<pair<tar, void*>> unmarshal(void* data) {
         optional<pair<tar,void*>> empty;
         auto header= read_header(data);
         if (header.has_value()) {
@@ -194,7 +198,7 @@ namespace minitar::v1 {
     }
 
     template<typename stream>
-    tar stream_read_header_aux(touches& touches, StreamReader<stream> & reader) {
+    tar stream_read_header_aux(touche_headers& touches, StreamReader<stream> & reader) {
         tar tar_acc;
 
         do {
@@ -235,13 +239,13 @@ namespace minitar::v1 {
     }
 
     template<typename stream>
-    optional<pair<tar, touches>> stream_read_header(StreamReader<stream> & reader) {
-        optional<pair<tar, touches>> const empty;
+    optional<pair<tar, touche_headers>> stream_read_header(StreamReader<stream> & reader) {
+        optional<pair<tar, touche_headers>> const empty;
 
         auto version= reader.read_uint8();
 
         if (version == 1) {
-            touches touches;
+            touche_headers touches;
             tar tar= stream_read_header_aux(touches, reader);
             return pair(tar, touches);
         } else {
@@ -250,7 +254,7 @@ namespace minitar::v1 {
     }
 
     template<typename stream>
-    void stream_read_data_aux(tar& tar_acc, touches& touches, StreamReader<stream> & reader) {
+    void stream_read_data_aux(tar& tar_acc, touche_headers& touches, StreamReader<stream> & reader) {
         auto elementReader = Overload {
             [&tar_acc, &touches, &reader](mkdir & mkdir) {
                 stream_read_data_aux(mkdir.children, touches, reader);
@@ -271,7 +275,7 @@ namespace minitar::v1 {
     }
 
     template<typename stream>
-    optional<tar> stream_read_tar(StreamReader<stream> & reader) {
+    optional<tar> stream_unmarshal(StreamReader<stream> & reader) {
         optional<tar> empty;
         auto header= stream_read_header(reader);
         if (header.has_value()) {
@@ -540,7 +544,7 @@ namespace minitar::v1 {
         return ptr;
     }
 
-    void write_tar(tar const & tar, void* data) {
+    void marshal(tar const & tar, void* data) {
         auto ptr= data;
         touche_contents contents;
         ptr= write_string(magic, ptr);
