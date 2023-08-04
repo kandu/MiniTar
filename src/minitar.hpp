@@ -7,6 +7,7 @@
 #include <optional>
 #include <filesystem>
 #include <tuple>
+#include <functional>
 
 namespace minitar {
 
@@ -79,6 +80,7 @@ namespace minitar {
 
         std::optional<tar> read_fs_tree(std::filesystem::path root);
         void write_fs_tree(tar & tar, std::filesystem::path root, bool overwrite= true);
+        void write_fs_tree(tar & tar, std::filesystem::path root, std::function<bool(std::filesystem::path const & path, std::string const & content)> const & overwrite);
 
         void print_tar(tar & tar, uint16_t level= 0);
     }
