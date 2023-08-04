@@ -1,5 +1,5 @@
-#ifndef _MINITAR_HPP
-#define _MINITAR_HPP
+#ifndef _ORG_SMAJI_MINITAR_HPP
+#define _ORG_SMAJI_MINITAR_HPP
 
 #include <string>
 #include <list>
@@ -89,5 +89,5 @@ namespace minitar {
 
 }
 
-#endif // _MINITAR_HPP
+#endif // _ORG_SMAJI_MINITAR_HPP
 
