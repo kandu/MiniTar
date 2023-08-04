@@ -78,7 +78,7 @@ namespace minitar {
         std::optional<tar> stream_unmarshal(StreamReader<stream> & reader);
 
         std::optional<tar> read_fs_tree(std::filesystem::path root);
-        void write_tar_tree(tar & tar, std::filesystem::path root);
+        void write_fs_tree(tar & tar, std::filesystem::path root, bool overwrite= true);
 
         void print_tar(tar & tar, uint16_t level= 0);
     }

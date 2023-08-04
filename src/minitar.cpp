@@ -439,24 +439,31 @@ namespace minitar::v1 {
         }
     }
 
-    void write_tar_tree_aux(tar & tar, fs::path root) {
+    void write_fs_tree_aux(tar & tar, fs::path root, bool overwrite) {
         auto elementWriter = Overload {
-            [&root](mkdir & mkdir) {
+            [&root, overwrite](mkdir & mkdir) {
                 auto path= root / mkdir.name;
                 mkdir_p(mkdir.name, root);
-                write_tar_tree_aux(mkdir.children, root);
+                write_fs_tree_aux(mkdir.children, root, overwrite);
             },
-            [&root](touch & touch) {
+            [&root, overwrite](touch & touch) {
                 auto path= root / fs::u8path(touch.name);
-                ofstream ofs;
-                ofs.open(path);
-                ofs << touch.content;
-                ofs.close();
+                if(overwrite || !fs::exists(path)) {
+                    ofstream ofs;
+                    ofs.open(path);
+                    ofs << touch.content;
+                    ofs.close();
+                }
             },
-            [&root](slink & link) {
+            [&root, overwrite](slink & link) {
                 auto link_file= root / fs::u8path(link.name);
                 auto to= fs::u8path(link.target);
-                filesystem::create_symlink(to, link_file);
+                if(overwrite && fs::exists(link_file)) {
+                    fs::remove(link_file);
+                }
+                if (!fs::exists(link_file)) {
+                    filesystem::create_symlink(to, link_file);
+                }
             },
         };
 
@@ -465,14 +472,14 @@ namespace minitar::v1 {
         }
     }
 
-    void write_tar_tree(tar & tar, fs::path root) {
+    void write_fs_tree(tar & tar, fs::path root, bool overwrite) {
         mkdir_p(root);
-        write_tar_tree_aux(tar, root);
+        write_fs_tree_aux(tar, root, overwrite);
     }
 
-    void write_dir_tree(mkdir & dir, fs::path root) {
+    void write_dir_tree(mkdir & dir, fs::path root, bool overwrite) {
         mkdir_p(root/dir.name);
-        write_tar_tree_aux(dir.children, root/dir.name);
+        write_fs_tree_aux(dir.children, root/dir.name, overwrite);
     }
 
     size_t marshal_size_aux(tar const & tar, size_t acc) {
