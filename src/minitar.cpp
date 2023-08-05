@@ -2,13 +2,7 @@
 #include <streambuf>
 #include <fstream>
 #include <iostream>
-
-#ifdef IS_UNIX
-#include "endian.h"
-#endif
-#ifdef IS_WIN32
-#include <winsock.h>
-#endif
+#include "portable_endian.h"
 
 using namespace std;
 
@@ -27,17 +21,17 @@ namespace minitar {
 
     pair<uint16_t, void*> read_uint16(void* source) {
         auto ptr= static_cast<uint16_t*>(source);
-        return pair(*ptr, ptr+1);
+        return pair(le16toh(*ptr), ptr+1);
     }
 
     pair<uint32_t, void*> read_uint32(void* source) {
         auto ptr= static_cast<uint32_t*>(source);
-        return pair(*ptr, ptr+1);
+        return pair(le32toh(*ptr), ptr+1);
     }
 
     pair<uint64_t, void*> read_uint64(void* source) {
         auto ptr= static_cast<uint64_t*>(source);
-        return pair(*ptr, ptr+1);
+        return pair(le64toh(*ptr), ptr+1);
     }
 
     void* write_uint8(uint8_t value, void* target) {
@@ -48,19 +42,19 @@ namespace minitar {
 
     void* write_uint16(uint16_t value, void* target) {
         auto ptr= static_cast<uint16_t*>(target);
-        *ptr= value;
+        *ptr= htole16(value);
         return ptr+1;
     }
 
     void* write_uint32(uint32_t value, void* target) {
         auto ptr= static_cast<uint32_t*>(target);
-        *ptr= value;
+        *ptr= htole32(value);
         return ptr+1;
     }
 
     void* write_uint64(uint64_t value, void* target) {
         auto ptr= static_cast<uint64_t*>(target);
-        *ptr= value;
+        *ptr= htole64(value);
         return ptr+1;
     }
 

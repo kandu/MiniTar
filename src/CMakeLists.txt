@@ -1,4 +1,5 @@
 add_library(minitar
+    portable_endian.h
     minitar.cpp
     )
 
@@ -10,12 +11,6 @@ target_include_directories(minitar PUBLIC
 target_compile_features(minitar PUBLIC cxx_std_17)
 target_compile_options(minitar PUBLIC -std=c++17)
 target_link_libraries(minitar PUBLIC)
-
-if(UNIX)
-    target_compile_definitions(minitar PRIVATE IS_UNIX)
-elseif(WIN32)
-    target_compile_definitions(minitar PRIVATE IS_WIN32)
-endif()
 
 install(TARGETS minitar
     EXPORT minitarTargets
