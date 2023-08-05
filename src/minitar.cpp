@@ -427,9 +427,15 @@ namespace minitar::v1 {
     void mkdir_p(fs::path p, fs::path start= "") {
         auto stream= std::stringstream(p.u8string());
         string item;
+        if (p.u8string().length() == 0) { return; }
+        if (p.u8string()[0] == start.preferred_separator) {
+            start= fs::u8path(string(1, start.preferred_separator));
+        }
         while (getline (stream, item, start.preferred_separator)) {
             start /= item;
-            fs::create_directory(start);
+            if (start != "") {
+                fs::create_directory(start);
+            }
         }
     }
 
