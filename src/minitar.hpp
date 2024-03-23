@@ -71,7 +71,7 @@ namespace minitar {
         size_t marshal_size(tar const & tar);
 
         void marshal(tar const & tar, void* data);
-        std::optional<std::pair<tar, void*>> unmarshal(void* data);
+        std::optional<std::pair<tar, void const *>> unmarshal(void const * data);
 
         template<typename stream>
         void stream_marshal(std::optional<tar> const & tar, StreamWriter<stream> & writer);

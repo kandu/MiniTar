@@ -9,28 +9,28 @@ using namespace std;
 namespace minitar {
     string const magic= "MINITAR";
 
-    pair<string, void*> read_string(void* source, uint64_t len) {
-        auto ptr= static_cast<char*>(source);
+    pair<string, void const *> read_string(void const * source, uint64_t len) {
+        auto ptr= static_cast<char const *>(source);
         return pair(string(ptr, len), ptr+len);
     }
 
-    pair<uint8_t, void*> read_uint8(void* source) {
-        auto ptr= static_cast<uint8_t*>(source);
+    pair<uint8_t, void const *> read_uint8(void const * source) {
+        auto ptr= static_cast<uint8_t const *>(source);
         return pair(*ptr, ptr+1);
     }
 
-    pair<uint16_t, void*> read_uint16(void* source) {
-        auto ptr= static_cast<uint16_t*>(source);
+    pair<uint16_t, void const *> read_uint16(void const * source) {
+        auto ptr= static_cast<uint16_t const *>(source);
         return pair(le16toh(*ptr), ptr+1);
     }
 
-    pair<uint32_t, void*> read_uint32(void* source) {
-        auto ptr= static_cast<uint32_t*>(source);
+    pair<uint32_t, void const *> read_uint32(void const * source) {
+        auto ptr= static_cast<uint32_t const *>(source);
         return pair(le32toh(*ptr), ptr+1);
     }
 
-    pair<uint64_t, void*> read_uint64(void* source) {
-        auto ptr= static_cast<uint64_t*>(source);
+    pair<uint64_t, void const *> read_uint64(void const * source) {
+        auto ptr= static_cast<uint64_t const *>(source);
         return pair(le64toh(*ptr), ptr+1);
     }
 
@@ -81,7 +81,7 @@ namespace minitar::v1 {
     using touche_headers= std::list<touch_header>;
     using touche_contents= std::list<std::string>;
 
-    pair<tar, void*> read_header_aux(touche_headers& touches, void* data) {
+    pair<tar, void const *> read_header_aux(touche_headers& touches, void const * data) {
         auto ptr= data;
 
         tar tar_acc;
@@ -128,7 +128,7 @@ namespace minitar::v1 {
         } while(true);
     }
 
-    optional<tuple<tar, void*, touche_headers>> read_header(void* data) {
+    optional<tuple<tar, void const *, touche_headers>> read_header(void const * data) {
         optional<tuple<tar, void*, touche_headers>> const empty;
         auto ptr= data;
 
@@ -150,7 +150,7 @@ namespace minitar::v1 {
         return tuple(header, ptr, touches);
     }
 
-    void* read_data_aux(tar& tar_acc, touche_headers& touches, void* data) {
+    void const * read_data_aux(tar& tar_acc, touche_headers& touches, void const * data) {
         auto elementReader = Overload {
             [&tar_acc, &touches, &data](mkdir & mkdir) {
                 data= read_data_aux(mkdir.children, touches, data);
@@ -171,16 +171,16 @@ namespace minitar::v1 {
         return data;
     }
 
-    pair<tar, void*> read_data(tar header, touche_headers header_touches, void* data) {
+    pair<tar, void const *> read_data(tar header, touche_headers header_touches, void const * data) {
         tar tar= header;
         touche_headers touches= header_touches;
 
         auto ptr= read_data_aux(tar, touches, data);
-        return pair(tar, (void*)ptr);
+        return pair(tar, (void const *)ptr);
     }
 
-    optional<pair<tar, void*>> unmarshal(void* data) {
-        optional<pair<tar,void*>> empty;
+    optional<pair<tar, void const *>> unmarshal(void const * data) {
+        optional<pair<tar,void const *>> empty;
         auto header= read_header(data);
         if (header.has_value()) {
             auto [tar, ptr, touches]= header.value();
