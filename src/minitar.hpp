@@ -1,3 +1,13 @@
+/*
+ * minitar.hpp
+ * -----------
+ * Copyright : (c) 2023 - 2024, ZAN DoYe <zandoye@gmail.com>
+ * Licence   : MIT
+ *
+ * This file is a part of minitar.
+ */
+
+
 #ifndef _ORG_SMAJI_MINITAR_HPP
 #define _ORG_SMAJI_MINITAR_HPP
 

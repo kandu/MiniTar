@@ -1,3 +1,13 @@
+/*
+ * minitar.cpp
+ * -----------
+ * Copyright : (c) 2023 - 2024, ZAN DoYe <zandoye@gmail.com>
+ * Licence   : MIT
+ *
+ * This file is a part of minitar.
+ */
+
+
 #include "minitar.hpp"
 #include <cstdint>
 #include <streambuf>
