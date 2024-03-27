@@ -513,44 +513,6 @@ namespace minitar::v1 {
         }
     }
 
-    void print_dir(minitar::v1::mkdir & dir, uint16_t level) {
-        auto space=[](uint16_t l) {
-            for (int i= 0; i < l; i++) {
-                cout << " ";
-            }
-        };
-
-        auto elementReader = Overload {
-            [=](minitar::v1::mkdir & mkdir) {
-                print_dir(mkdir, level+2);
-                return;
-            },
-            [=](minitar::v1::touch & touch) {
-                space(level+2);
-                cout << "[T]" << touch.name << " ";
-                print_perm(touch.perm);
-                cout << endl;
-                return;
-            },
-            [=](minitar::v1::slink & link) {
-                space(level+2);
-                cout << "[L]" << link.name << " ";
-                print_perm(link.perm);
-                cout <<" -> " << link.target << endl;
-                return;
-            },
-        };
-
-        space(level);
-        cout << "[D]" << dir.name << " ";
-        print_perm(dir.perm);
-        cout << endl;
-
-        for (auto & element: dir.children) {
-            visit(elementReader, element);
-        }
-    }
-
     void mkdir_p(fs::path p, fs::path start= "") {
         auto stream= std::stringstream(p.u8string());
         string item;
