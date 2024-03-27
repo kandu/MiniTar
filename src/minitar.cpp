@@ -376,13 +376,7 @@ namespace minitar::v1 {
 
     namespace fs= filesystem;
 
-    string strip(fs::path path, fs::path top) {
-        auto root_s= top.u8string();
-        auto path_s= path.u8string();
-        return path_s.substr(root_s.length(), path_s.length()-root_s.length());
-    };
-
-    tar read_fs_tree_aux(fs::path const & root, fs::path const & top) {
+    tar read_fs_tree_aux(fs::path const & root) {
         tar tar_current;
         for (auto const & entry: fs::directory_iterator(root)) {
             auto status= fs::status(entry);
@@ -391,7 +385,7 @@ namespace minitar::v1 {
                     if (fs::is_symlink(entry.path())) {
                         auto target= fs::read_symlink(entry);
                         slink link;
-                        link.name= strip(entry.path(), top);
+                        link.name= entry.path().filename();
                         link.perm= status.permissions();
                         link.target= target.u8string();
                         tar_current.push_back(link);
@@ -401,7 +395,7 @@ namespace minitar::v1 {
                         stringstream buf;
                         buf << ifs.rdbuf();
                         ifs.close();
-                        touch.name= strip(entry.path(), top);
+                        touch.name= entry.path().filename();
                         touch.perm= status.permissions();
                         touch.content= buf.str();
                         tar_current.push_back(touch);
@@ -410,7 +404,7 @@ namespace minitar::v1 {
                 case fs::file_type::symlink: {
                     auto target= fs::read_symlink(entry);
                     slink link;
-                    link.name= strip(entry.path(), top);
+                    link.name= entry.path().filename();
                     link.perm= status.permissions();
                     link.target= target.u8string();
                     tar_current.push_back(link);
@@ -418,8 +412,8 @@ namespace minitar::v1 {
                 case fs::file_type::directory: {
                     mkdir dir;
                     tar tar_nested;
-                    auto children= read_fs_tree_aux(entry.path(), top);
-                    dir.name= strip(entry.path(), top);
+                    auto children= read_fs_tree_aux(entry.path());
+                    dir.name= entry.path().filename();
                     dir.perm= status.permissions();
                     dir.children= children;
                     tar_current.push_back(dir);
@@ -434,11 +428,7 @@ namespace minitar::v1 {
     optional<tar> read_fs_tree(fs::path root) {
         optional<tar> empty;
         if (fs::is_directory(root)) {
-            auto root_name= root.u8string();
-            if (root_name[root_name.length()-1] != root.preferred_separator) {
-                root= filesystem::u8path(root_name + string(1, root.preferred_separator));
-            }
-            auto tar= read_fs_tree_aux(root, root);
+            auto tar= read_fs_tree_aux(root);
             return tar;
         } else {
             return empty;
@@ -452,7 +442,7 @@ namespace minitar::v1 {
             auto status= fs::status(root);
             dir.name= root;
             dir.perm= status.permissions();
-            auto tar= read_fs_tree_aux(root, root);
+            auto tar= read_fs_tree_aux(root);
             dir.children= tar;
             return dir;
         } else {
@@ -513,18 +503,17 @@ namespace minitar::v1 {
         }
     }
 
-    void mkdir_p(fs::path p, fs::path start= "") {
+    void mkdir_p(fs::path p) {
         auto stream= std::stringstream(p.u8string());
+        fs::path start;
         string item;
-        if (p.u8string().length() == 0) { return; }
-        if (p.u8string()[0] == start.preferred_separator) {
+        if (p.empty()) { return; }
+        if (p.u8string()[0] == p.preferred_separator) {
             start= fs::u8path(string(1, start.preferred_separator));
         }
         while (getline (stream, item, start.preferred_separator)) {
             start /= item;
-            if (start != "") {
-                fs::create_directory(start);
-            }
+            fs::create_directory(start);
         }
     }
 
@@ -532,9 +521,9 @@ namespace minitar::v1 {
         auto elementWriter = Overload {
             [&root, &overwrite](mkdir & mkdir) {
                 auto path= root / mkdir.name;
-                mkdir_p(mkdir.name, root);
+                mkdir_p(path);
                 fs::permissions(path, mkdir.perm);
-                write_fs_tree_aux(mkdir.children, root, overwrite);
+                write_fs_tree_aux(mkdir.children, path, overwrite);
             },
             [&root, &overwrite](touch & touch) {
                 auto path= root / fs::u8path(touch.name);
@@ -578,9 +567,9 @@ namespace minitar::v1 {
         auto elementWriter = Overload {
             [&root, overwrite](mkdir & mkdir) {
                 auto path= root / mkdir.name;
-                mkdir_p(mkdir.name, root);
+                mkdir_p(path);
                 fs::permissions(path, mkdir.perm);
-                write_fs_tree_aux(mkdir.children, root, overwrite);
+                write_fs_tree_aux(mkdir.children, path, overwrite);
             },
             [&root, overwrite](touch & touch) {
                 auto path= root / fs::u8path(touch.name);
