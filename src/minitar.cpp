@@ -381,26 +381,6 @@ namespace minitar::v1 {
         for (auto const & entry: fs::directory_iterator(root)) {
             auto status= fs::status(entry);
             switch (status.type()) {
-                case fs::file_type::regular: {
-                    if (fs::is_symlink(entry.path())) {
-                        auto target= fs::read_symlink(entry);
-                        slink link;
-                        link.name= entry.path().filename();
-                        link.perm= status.permissions();
-                        link.target= target.u8string();
-                        tar_current.push_back(link);
-                    } else {
-                        touch touch;
-                        auto ifs= ifstream(entry.path());
-                        stringstream buf;
-                        buf << ifs.rdbuf();
-                        ifs.close();
-                        touch.name= entry.path().filename();
-                        touch.perm= status.permissions();
-                        touch.content= buf.str();
-                        tar_current.push_back(touch);
-                    }
-                    } break;
                 case fs::file_type::symlink: {
                     auto target= fs::read_symlink(entry);
                     slink link;
@@ -408,6 +388,17 @@ namespace minitar::v1 {
                     link.perm= status.permissions();
                     link.target= target.u8string();
                     tar_current.push_back(link);
+                    } break;
+                case fs::file_type::regular: {
+                    touch touch;
+                    auto ifs= ifstream(entry.path());
+                    stringstream buf;
+                    buf << ifs.rdbuf();
+                    ifs.close();
+                    touch.name= entry.path().filename();
+                    touch.perm= status.permissions();
+                    touch.content= buf.str();
+                    tar_current.push_back(touch);
                     } break;
                 case fs::file_type::directory: {
                     mkdir dir;
