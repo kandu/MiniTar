@@ -11,6 +11,22 @@
 
 namespace minitar {
 
+    enum class FilePerm {
+        none=           0,
+        owner_read=  0400,
+        owner_write= 0200,
+        owner_exec=  0100,
+        group_read=   040,
+        group_write=  020,
+        group_exec=   010,
+        others_read=   04,
+        others_write=  02,
+        others_exec=   01,
+        set_uid=    04000,
+        set_gid=    02000,
+        sticky_bit= 01000,
+    };
+
     template <typename stream>
     struct StreamReader {
         StreamReader (stream s);
@@ -34,24 +50,25 @@ namespace minitar {
     };
 
     namespace v1 {
-        enum action {
+        enum class action {
             EXIT,
             MKDIR,
             CDUP,
             TOUCH,
             SLINK,
-            HLINK,
         };
 
         struct mkdir;
 
         struct touch {
             std::string name;
+            std::filesystem::perms perm;
             std::string content;
         };
 
         struct slink {
             std::string name;
+            std::filesystem::perms perm;
             std::string target;
         };
 
@@ -65,6 +82,7 @@ namespace minitar {
 
         struct mkdir {
             std::string name;
+            std::filesystem::perms perm;
             tar children;
         };
 
