@@ -390,37 +390,32 @@ namespace minitar::v1 {
         tar tar_current;
         for (auto const & entry: fs::directory_iterator(root)) {
             auto status= fs::status(entry);
-            switch (status.type()) {
-                case fs::file_type::symlink: {
-                    auto target= fs::read_symlink(entry);
-                    slink link;
-                    link.name= entry.path().filename();
-                    link.perm= status.permissions();
-                    link.target= target.u8string();
-                    tar_current.push_back(link);
-                    } break;
-                case fs::file_type::regular: {
-                    touch touch;
-                    auto ifs= ifstream(entry.path());
-                    stringstream buf;
-                    buf << ifs.rdbuf();
-                    ifs.close();
-                    touch.name= entry.path().filename();
-                    touch.perm= status.permissions();
-                    touch.content= buf.str();
-                    tar_current.push_back(touch);
-                    } break;
-                case fs::file_type::directory: {
-                    mkdir dir;
-                    tar tar_nested;
-                    auto children= read_fs_tree_aux(entry.path());
-                    dir.name= entry.path().filename();
-                    dir.perm= status.permissions();
-                    dir.children= children;
-                    tar_current.push_back(dir);
-                    } break;
-                default: {
-                    } break;
+            if (fs::is_symlink(entry)) {
+                auto target= fs::read_symlink(entry);
+                slink link;
+                link.name= entry.path().filename();
+                link.perm= status.permissions();
+                // the permission of symlink is irrelevant
+                link.target= target.u8string();
+                tar_current.push_back(link);
+            } else if (fs::is_regular_file(entry)) {
+                touch touch;
+                auto ifs= ifstream(entry.path());
+                stringstream buf;
+                buf << ifs.rdbuf();
+                ifs.close();
+                touch.name= entry.path().filename();
+                touch.perm= status.permissions();
+                touch.content= buf.str();
+                tar_current.push_back(touch);
+            } else if (fs::is_directory(entry)) {
+                mkdir dir;
+                tar tar_nested;
+                auto children= read_fs_tree_aux(entry.path());
+                dir.name= entry.path().filename();
+                dir.perm= status.permissions();
+                dir.children= children;
+                tar_current.push_back(dir);
             }
         }
         return tar_current;
@@ -545,7 +540,8 @@ namespace minitar::v1 {
                 if (!fs::exists(link_file)) {
                     filesystem::create_symlink(to, link_file);
                 }
-                fs::permissions(link_file, link.perm);
+                // fs::permissions(link_file, link.perm);
+                // the permission of symlink is irrelevant
             },
         };
 
@@ -591,7 +587,8 @@ namespace minitar::v1 {
                 if (!fs::exists(link_file)) {
                     filesystem::create_symlink(to, link_file);
                 }
-                fs::permissions(link_file, link.perm);
+                // fs::permissions(link_file, link.perm);
+                // the permission of symlink is irrelevant
             },
         };
 
