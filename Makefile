@@ -1,17 +1,24 @@
-all: build
-	cmake --build $< --parallel
+BUILD_DIR=build
 
 build:
-	cmake -B $@
+	cmake --build ${BUILD_DIR} --parallel
 
-config_release:
+config:
+	cmake \
+		-DCMAKE_BUILD_TYPE=Debug \
+		-B ${BUILD_DIR}
+
+config-release:
 	cmake \
 		-DCMAKE_BUILD_TYPE=Release \
-		-B build
+		-B ${BUILD_DIR}
+
+all: config build
 
 install:
-	cmake --install build
+	cmake --install ${BUILD_DIR}
 
 clean:
 	rm -rf build
 
+.PHONY: build

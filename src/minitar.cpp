@@ -447,8 +447,7 @@ namespace minitar::v1 {
     }
 
     void print_perm(fs::perms p) {
-        auto show = [=](char op, fs::perms perm)
-        {
+        auto show = [=](char op, fs::perms perm) {
             cout << (fs::perms::none == (perm & p) ? '-' : op);
         };
         show('r', fs::perms::owner_read);
